@@ -1,0 +1,36 @@
+1.1. Gostaria de chegar de manhã naminha mesa e ter um
+lugar único onde eu possa observar o portfólio da House Rocket. 
+Nesse portfólio, eu tenho interesse. 
+
+1. Filtros dos imóveis por um ou várias regiões.
+
+2. Escolher uma ou mais variáveis para visualizar.
+
+3. Observar o número total de imóveis, a média de preço, a média da
+sala de estar e também a média do preço por metro quadrado em cada 
+um dos códigos postais.
+
+4. Analisar cada uma das colunas de um modo mais descrito.
+
+5. Uma mapa com a densidade de portfólio por região e também densidade de preço.
+
+6. Checar a variação anual de preços.
+
+7. Checar a variação diária de preços.
+
+8. Conferir a distribuição dos imóveis por:
+- preço,
+- Número de
+quartos
+- Numero de
+banheiros
+- Numero de andares,
+- Vista para água ou não.
+
+2. Planejamento da Solução:
+    - um link para acessar o dashboard.
+
+2.1 - A ferramentas de uso:
+    - Jupyter notebook (python 3.9)
+    - Editor de texto comum
+

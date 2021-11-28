@@ -1,0 +1,12 @@
+Planejamento de montagem do Dashboard:
+
+Objetivo: Visualizar os imóveis por código postal
+Ação do usuário: Digitar um ou mais códigos
+A visualização: Uma tabela com todos os atributos e filtos c/código postal
+
+Orientações de gráficos:
+- Tabela => Exploração e Comparação
+- Linhas => Crescimento ou decaimento (ao logo do tempo)
+- Barras => Comparar Proporções (vendas de produtos mais que o outro)
+- Pizza => Até duas comparações.
+
