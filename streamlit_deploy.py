@@ -44,10 +44,37 @@ elif (f_zipcode == []) & (f_attributes != [] ): #aqui o Ceo está pedido as colu
        data = data.loc[:, f_attributes]
 
 else:
-    data.copy()
+    data = data.copy()
+
+df1 = data[['id','zipcode']].groupby('zipcode').count().reset_index()
+df2 = data[['zipcode','price']].groupby('zipcode').mean().reset_index()
+df3 = data[['zipcode','sqft_living']].groupby('zipcode').mean().reset_index()
+df4 = data[['zipcode','price_m2']].groupby('zipcode').mean().reset_index()
+
+#merge (unir as colunas de estastiticas criadas)
+
+m1 = pd.merge( df1, df2, on='zipcode', how = 'inner')
+m2 = pd.merge( m1, df3, on='zipcode', how= 'inner')
+df= pd.merge(m2, df4, on ='zipcode', how='inner')
+
+df.columns = ['ZIPCODE','TOTAL HOUSES','PRICE','SQFT LIVING','PRICE/M2']
+
+#STASTITICS DESCRITIVES
+
+num_attributes = data.select_dtypes(include= ['int64','float64'] )
+media = pd.DataFrame(num_attributes.apply( np.mean ) )
+mediana = pd.DataFrame( num_attributes.apply( np.median ) )
+std = pd.DataFrame( num_attributes.apply( np.std ) )
+
+max_= pd.DataFrame( num_attributes.apply( np.max ))
+min_ =  pd.DataFrame (num_attributes.apply( np.min ) )
+
+df1 = pd.concat([max_,min_,media,mediana,std], axis=1).reset_index()
+
+df1.columns = ['attributes','MAX','MIN','MEDIA','MEDIANA','STD']
 
 st.write( f_attributes )
 st.write ( f_zipcode )
-st.write( data )
+st.dataframe( df, height=600 )
 
 #st.write ( data.head() )
