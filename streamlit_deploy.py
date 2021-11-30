@@ -51,7 +51,11 @@ df2 = data[['zipcode','price']].groupby('zipcode').mean().reset_index()
 df3 = data[['zipcode','sqft_living']].groupby('zipcode').mean().reset_index()
 df4 = data[['zipcode','price_m2']].groupby('zipcode').mean().reset_index()
 
+st.dataframe( data )
+
 #merge (unir as colunas de estastiticas criadas)
+
+c1,c2 = st.columns((2,1))
 
 m1 = pd.merge( df1, df2, on='zipcode', how = 'inner')
 m2 = pd.merge( m1, df3, on='zipcode', how= 'inner')
@@ -59,9 +63,13 @@ df= pd.merge(m2, df4, on ='zipcode', how='inner')
 
 df.columns = ['ZIPCODE','TOTAL HOUSES','PRICE','SQFT LIVING','PRICE/M2']
 
+c1.header('Average Values')
+c1.dataframe( df, height=600 )
+
 #STASTITICS DESCRITIVES
 
 num_attributes = data.select_dtypes(include= ['int64','float64'] )
+
 media = pd.DataFrame(num_attributes.apply( np.mean ) )
 mediana = pd.DataFrame( num_attributes.apply( np.median ) )
 std = pd.DataFrame( num_attributes.apply( np.std ) )
@@ -75,6 +83,8 @@ df1.columns = ['attributes','MAX','MIN','MEDIA','MEDIANA','STD']
 
 st.write( f_attributes )
 st.write ( f_zipcode )
-st.dataframe( df, height=600 )
 
-#st.write ( data.head() )
+c2.header('Desciptive Stastitics')
+c2.dataframe(df1, height=600)
+
+
