@@ -46,12 +46,14 @@ elif (f_zipcode == []) & (f_attributes != [] ): #aqui o Ceo está pedido as colu
 else:
     data = data.copy()
 
+st.dataframe( data )
+
 df1 = data[['id','zipcode']].groupby('zipcode').count().reset_index()
 df2 = data[['zipcode','price']].groupby('zipcode').mean().reset_index()
 df3 = data[['zipcode','sqft_living']].groupby('zipcode').mean().reset_index()
 df4 = data[['zipcode','price_m2']].groupby('zipcode').mean().reset_index()
 
-st.dataframe( data )
+
 
 #merge (unir as colunas de estastiticas criadas)
 
