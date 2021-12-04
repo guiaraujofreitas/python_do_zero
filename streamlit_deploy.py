@@ -2,9 +2,8 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 import folium
-
-from streamlit_folium import streamlit_static
-
+from streamlit_folium import folium_static
+from geopy.geocoders import Nominatim 
 
 st.set_page_config( layout= 'wide') #ampliar o tamanho dos dados
 
@@ -101,13 +100,15 @@ st.title ('Region Overview' )
 
 c1,c2 = st.columns( ( 1,1 ) )
 
-c1.hander('Portifolio Density')
+c1.header('Portifolio Density')
 
-df = data.sample(10)
+df = data.sample(5)
 
 #Base Map- Folium
 
 density_map = folium.Map( location=[data['lat'].mean(),data['long'].mean()],default_zoom_start=15 )
+
+geolocator = Nominatim(user_agent = 'geopiExercises')
 
 with c1:
     folium_static(density_map)
