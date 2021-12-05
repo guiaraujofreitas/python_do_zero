@@ -2,8 +2,10 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 import folium
+from folium.plugins import MarkerCluster
 from streamlit_folium import folium_static
-from geopy.geocoders import Nominatim 
+import geopandas
+
 
 st.set_page_config( layout= 'wide') #ampliar o tamanho dos dados
 
@@ -18,6 +20,16 @@ path = './kc_house_data.csv'
 
 data = get_data( path )
 
+#ler arquivo geopandas
+@st.cache( allow_output_mutation=True )
+def get_geofile( url ):
+    geofile = geopandas.read_file( url )
+    return geofile
+
+#get geofile
+url= 'https://opendata.arcgis.com/datasets/83fc2e72903343aabff6de8cb445b81c_2.geojson'
+
+geofile = get_geofile(url)
 
 #add new feature:
 #depois voltar aqui para ajustar de pá quadrada para m2.
@@ -102,15 +114,47 @@ c1,c2 = st.columns( ( 1,1 ) )
 
 c1.header('Portifolio Density')
 
-df = data.sample(5)
+df = data.sample(10)
 
 #Base Map- Folium
+density_map =folium.Map( location=[data['lat'].mean(),data['long'].mean()],default_zoom_start=15 )
 
-density_map = folium.Map( location=[data['lat'].mean(),data['long'].mean()],default_zoom_start=15 )
+marker_cluster = MarkerCluster().add_to( density_map )
 
-geolocator = Nominatim(user_agent = 'geopiExercises')
+#marker_cluster = MarkerCluster().add_to( density_map )
+for name, row in df.iterrows():
+    folium.Marker( [row['lat'], row['long'] ],
+    popup= 'Sold R${0} on: {1}.Features: {2} sqft, {3} bedrooms, {4} bathrooms, year built: {5}'.format(row['price'],
+                    row['date'],
+                    row['sqft_living'],
+                    row['bedrooms'],
+                    row['bathrooms'],
+                    row['yr_built'] ) ).add_to( marker_cluster )
 
 with c1:
     folium_static(density_map)
 
+#Region Price Map
+c2.header ( 'Price Density')
 
+df = data[['price','zipcode']].groupby('zipcode').mean().reset_index()
+
+df.columns= [ 'ZIP','PRICE']
+
+
+geofile = geofile[geofile['ZIP'].isin( df['ZIP'].tolist() )]
+
+region_price_map= folium.Map( location=[data['lat'].mean(), data['long'].mean()],
+                    default_zomm_start=15)
+
+#densidade por cor
+region_price_map.choropleth(data=df,
+                            geo_data=geofile,
+                            columns=['ZIP','PRICE'],
+                            key_on='feature.properties.ZIP',
+                            fill_color= 'YlOrRd',
+                            fill_opacity= 0.7,
+                            line_opacity= 0.2,
+                            legend_name= 'AVG`PRICE' )
+with c2:
+    folium_static( region_price_map )
