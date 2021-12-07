@@ -6,6 +6,8 @@ from folium.plugins import MarkerCluster
 from streamlit_folium import folium_static
 import geopandas
 
+import plotly.express as px
+
 
 st.set_page_config( layout= 'wide') #ampliar o tamanho dos dados
 
@@ -158,3 +160,21 @@ region_price_map.choropleth(data=df,
                             legend_name= 'AVG`PRICE' )
 with c2:
     folium_static( region_price_map )
+
+#======================================= #
+# Distribuição dos imóveis por categorias comerciais
+# ====================================== #
+
+st.sidebar.title ('Commercial Options') #título do filtro
+st.title (' Commercial Attributes')
+
+#====== Average Price Yr Built by Year ============
+df = data[['yr_built','price']].groupby('yr_built').mean().reset_index()
+
+#fig = px.plotly
+
+
+# ====== Average Price YR Built by Day
+
+
+
