@@ -169,12 +169,32 @@ st.sidebar.title ('Commercial Options') #título do filtro
 st.title (' Commercial Attributes')
 
 #====== Average Price Yr Built by Year ============
+
+# ==== filtros ====== #
+
+min_year_built = int(data['yr_built'].min() )
+max_year_built = int(data['yr_built'].max() )
+
+st.sidebar.subheader('Select Max Year Built')
+f_year_built = st.sidebar.slider('Year Built', min_year_built,
+                                        max_year_built )
+
+
 df = data[['yr_built','price']].groupby('yr_built').mean().reset_index()
 
-#fig = px.plotly
+fig = px.line( df, x= 'yr_built', y = 'price')
 
+st.plotly_chart( fig, use_container_width= True ) #para deixar o gráfico correspondende c/ a tela
 
 # ====== Average Price YR Built by Day
+
+data['date'] = pd.to_datetime(data['date'])
+
+df= data[['date','price']].groupby('date').mean().reset_index()
+
+fig2= px.line(df, x= 'date',y= 'price')
+
+st.plotly_chart( fig2, use_container_witdh=True )
 
 
 
