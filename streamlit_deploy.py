@@ -165,23 +165,39 @@ with c2:
 # Distribuição dos imóveis por categorias comerciais
 # ====================================== #
 
-st.sidebar.title ('Commercial Options') #título do filtro
-st.title (' Commercial Attributes')
-
 #====== Average Price Yr Built by Year ============
 
 # ==== filtros ====== #
 
+#barra de seleção
 min_year_built = int(data['yr_built'].min() )
 max_year_built = int(data['yr_built'].max() )
 
-st.sidebar.subheader('Select Max Year Built')
+
+st.sidebar.title ('Commercial Options') #título do filtro
+st.title (' Commercial Attributes')
+
+st.sidebar.subheader('Select Max Year Built') #texto em cima do filtro
 f_year_built = st.sidebar.slider('Year Built', min_year_built,
-                                        max_year_built )
+                                        max_year_built,
+                                        min_year_built )
+#filtro por Year
+df = data.loc[data['yr_built'] < f_year_built]
+
+df = df[['yr_built','price']].groupby('yr_built').mean().reset_index()
+
+#filtro por day
+#barra seleção dia:
+data['date'] = pd.to_datetime(data['date'])
+
+min_day_built = data['yr_built']
+
+min_day_built = 
 
 
-df = data[['yr_built','price']].groupby('yr_built').mean().reset_index()
 
+
+#plot
 fig = px.line( df, x= 'yr_built', y = 'price')
 
 st.plotly_chart( fig, use_container_width= True ) #para deixar o gráfico correspondende c/ a tela
@@ -194,7 +210,7 @@ df= data[['date','price']].groupby('date').mean().reset_index()
 
 fig2= px.line(df, x= 'date',y= 'price')
 
-st.plotly_chart( fig2, use_container_witdh=True )
+st.plotly_chart( fig2, use_container_witdh=True ) #tamanho total do espaço
 
 
 
