@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import streamlit as st
+from datetime import datetime 
 import folium
 from folium.plugins import MarkerCluster
 from streamlit_folium import folium_static
@@ -188,12 +189,16 @@ df = df[['yr_built','price']].groupby('yr_built').mean().reset_index()
 
 #filtro por day
 #barra seleção dia:
-data['date'] = pd.to_datetime(data['date'])
+data['date'] = pd.to_datetime(data['date']).dt.strftime('%Y%-m%-%d')
 
-min_day_built = data['yr_built']
+min_day_built = datetime.strptime(data['date'].min(), '%Y-%m-%d')
 
-min_day_built = 
+max_day_built = datetime.strptime(data['date'].max(), '%Y-%m-%d')
+  
 
+
+st.sidebar.title('Day the built')
+st.sidebar.subheader('Select The Day Built')
 
 
 
