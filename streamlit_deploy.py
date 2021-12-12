@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import streamlit as st
+import datetime
 from datetime import datetime 
 import folium
 from folium.plugins import MarkerCluster
@@ -187,31 +188,34 @@ df = data.loc[data['yr_built'] < f_year_built]
 
 df = df[['yr_built','price']].groupby('yr_built').mean().reset_index()
 
-#filtro por day
-#barra seleção dia:
-data['date'] = pd.to_datetime(data['date']).dt.strftime('%Y%-m%-%d')
-
-min_day_built = datetime.strptime(data['date'].min(), '%Y-%m-%d')
-
-max_day_built = datetime.strptime(data['date'].max(), '%Y-%m-%d')
-  
-
-
-st.sidebar.title('Day the built')
-st.sidebar.subheader('Select The Day Built')
-
-
-
 #plot
 fig = px.line( df, x= 'yr_built', y = 'price')
 
 st.plotly_chart( fig, use_container_width= True ) #para deixar o gráfico correspondende c/ a tela
 
+
 # ====== Average Price YR Built by Day
 
-data['date'] = pd.to_datetime(data['date'])
+st.header('Average Price per Day')
+st.sidebar.subheader('Select The Day Built')
 
+#filtro por day
+#barra seleção dia:
+data['date'] = data['date'] = pd.to_datetime( data['date'] ).dt.strftime( '%Y-%m-%d' )
+
+min_date = datetime.strptime(data['date'].min(),'%Y-%m-%d')
+
+max_date = datetime.strptime(data['date'].max(),'%Y-%m-%d')
+
+f_date = st.sidebar.slider('Select Day', min_date, max_date, min_date)
+  
+
+data['date'] = pd.to_datetime(data['date'])
+df = data.loc[data['date']< f_date] #date filtering
 df= data[['date','price']].groupby('date').mean().reset_index()
+
+
+#plot date
 
 fig2= px.line(df, x= 'date',y= 'price')
 
