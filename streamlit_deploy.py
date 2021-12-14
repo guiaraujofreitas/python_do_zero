@@ -234,14 +234,43 @@ avg_price = int(data['price'].mean())
 
 f_price = st.sidebar.slider('Select The Price', min_price,max_price, avg_price,min_price)
 
+#Filters Bedrooms
+
 df = data[data['price']< f_price]
 
 fig = px.histogram(df, x ='price',nbins = 50)
 
 st.plotly_chart(fig, user_container_witdh= True)
 
-#####======= Atributos =========
+#filtros dos cômodos:
 
+f_bathrooms = st.sidebar.selectbox('Number de Bathrooms', sorted(data['bathrooms'].unique( ) ) )
+
+f_bedrooms = st.sidebar.selectbox('Number Bedrooms', sorted(data['bedrooms'].unique( ) ) )
+
+#####======= Atributos =========
+#Title Bedrooms and Bathrooms
+st.subheader('Histrogram Bedrooms')
+st.subheader('Histrogram Bathrooms')
+
+c1, c2 = st.columns(2)
+#filter bedrooms:
+
+
+
+df= data[data['bedrooms']< f_bedrooms]
 
 fig = px.histogram(df, x='bedrooms', nbins=20)
-st.plotly_chart(fig, user_container_witdh= True)
+c1.plotly_chart(fig, user_container_witdh= True)
+
+
+###======= Barthrooms ==========
+
+
+df = data[data['bathrooms'] < f_bathrooms]
+
+fig =px.histogram(df, x= 'bathrooms', nbins=20)
+c2.plotly_chart(fig, user_container_witdh= True)
+
+
+
