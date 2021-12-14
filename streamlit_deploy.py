@@ -221,5 +221,27 @@ fig2= px.line(df, x= 'date',y= 'price')
 
 st.plotly_chart( fig2, use_container_witdh=True ) #tamanho total do espaço
 
+## ========== Histograma ==================
+
+#filters 
+st.title('Distribuição dos Atributos dos imóveis')
+st.subheader('Plot Histograma')
+
+min_price = int(data['price'].min())
+max_price = int(data['price'].max())
+avg_price = int(data['price'].mean())
 
 
+f_price = st.sidebar.slider('Select The Price', min_price,max_price, avg_price,min_price)
+
+df = data[data['price']< f_price]
+
+fig = px.histogram(df, x ='price',nbins = 50)
+
+st.plotly_chart(fig, user_container_witdh= True)
+
+#####======= Atributos =========
+
+
+fig = px.histogram(df, x='bedrooms', nbins=20)
+st.plotly_chart(fig, user_container_witdh= True)
