@@ -248,15 +248,18 @@ f_bathrooms = st.sidebar.selectbox('Number de Bathrooms', sorted(data['bathrooms
 
 f_bedrooms = st.sidebar.selectbox('Number Bedrooms', sorted(data['bedrooms'].unique( ) ) )
 
+f_floor = st.sidebar.selectbox('Number Floors', sorted(data['floors'].unique() ) )
+
+f_waterfront = st.sidebar.selectbox('Select Water Is Front', data['waterfront'].unique( ) )
+
 #####======= Atributos =========
-#Title Bedrooms and Bathrooms
-st.subheader('Histrogram Bedrooms')
-st.subheader('Histrogram Bathrooms')
 
 c1, c2 = st.columns(2)
+
+#Title Bedrooms and Bathrooms
+c1.subheader('Histrogram Bedrooms')
+c2.subheader('Histrogram Bathrooms')
 #filter bedrooms:
-
-
 
 df= data[data['bedrooms']< f_bedrooms]
 
@@ -272,5 +275,30 @@ df = data[data['bathrooms'] < f_bathrooms]
 fig =px.histogram(df, x= 'bathrooms', nbins=20)
 c2.plotly_chart(fig, user_container_witdh= True)
 
+
+#===================================== ##
+
+cf,cw = st.columns(2)
+
+cf.subheader('Histrogram Houses per Floor') 
+cw.subheader('Histrogram Water Front')
+
+### ======= Floors =========
+
+df = data[data['floors']< f_floor]
+
+fig = px.histogram(df, x='floors', nbins=20)
+cf.plotly_chart(fig, user_container_witdh= True)
+
+## ====== WaterFront =============
+
+if f_waterfront:
+    df = data[data['waterfront']< f_waterfront]
+
+else:
+    data.copy()
+
+fig = px.histogram(df, x='waterfront', nbins=10)
+cw.plotly_chart(fig, user_container_witdh= True)
 
 
