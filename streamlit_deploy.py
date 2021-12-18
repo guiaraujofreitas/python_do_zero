@@ -56,14 +56,16 @@ f_zipcode = st.sidebar.multiselect('Enter Zipcode', data['zipcode'].unique() ) #
 if ( f_zipcode != [] ) & (f_attributes != [] ):
     data = data.loc[ data['zipcode'].isin(f_zipcode),f_attributes ]
 
-elif(f_zipcode != [] ) & (f_attributes == []):
+elif ( f_zipcode != [] ) & (f_attributes == []):
     data = data.loc[ data['zipcode'].isin(f_zipcode),:] #aqui o CEO está pedido o zipcode
 
-elif (f_zipcode == []) & (f_attributes != [] ): #aqui o Ceo está pedido as colunas(atributos)
-       data = data.loc[:, f_attributes]
+elif ( f_zipcode == [] ) & ( f_attributes != [] ): #aqui o Ceo está pedido as colunas(atributos)
+    data = data.loc[:, f_attributes]
 
 else:
     data = data.copy()
+
+
 
 st.dataframe( data )
 
@@ -293,7 +295,7 @@ cf.plotly_chart(fig, user_container_witdh= True)
 ## ====== WaterFront =============
 
 if f_waterfront:
-    df = data[data['waterfront']< f_waterfront]
+    df = data[data['waterfront'] == 1]
 
 else:
     data.copy()
