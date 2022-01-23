@@ -1,0 +1,19 @@
+df1 = df.copy()
+
+#criando coluna de nível dos imóveis
+df1['level'] = df1['condition'].apply(lambda x: str('bad') if x <=2 else str('good') if (x>=3) & (x<=4) 
+                                    else str('excelent'))
+
+#fazendo a mediana de preços dos endereços(zipcode) por preço por M2 construídos
+price_region = df1[['zipcode','price_m2_lot']].groupby('zipcode').median().reset_index()
+
+#renomenado as colunas para futura mescla
+price_region.columns= ['zipcode','price_region']
+
+#unificando os preços medianos das regioões com o DF original
+df1 = pd.merge(df1,price_region, on='zipcode',how='inner')
+
+construção de busca dos imóveis abaixo do preço e que estão boas condições
+
+df1['buy'] = df1.apply(lambda x: str('yes_buy') if (x['price_m2_lot']<x['price_region']) & (x['condition']>= 3) 
+                       else  str('no_buy'), axis=1 )
