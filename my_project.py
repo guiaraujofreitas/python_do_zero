@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 import seaborn as sns
+import plotly.express as px
+import matplotlib.pyplot as plt
 
 from matplotlib import pyplot as plt
 
@@ -62,6 +64,34 @@ print('A diferença é de {} %'.format(porcentagem))
 #plotando o gráfico
 
 #dimensão do gráfico
-fig = plt.figure(figsize=(13,8))
+#fig = plt.figure(figsize=(13,8))
 
-sns.barplot(x= 'waterfront', y='price_m2_lot', data = f_h1);
+#sns.barplot(x= 'waterfront', y='price_m2_lot', data = f_h1);
+
+figure= px.bar(f_h1, x= 'waterfront', y='price_m2_lot' )
+st.plotly_chart(figure)
+
+############################################################################################
+
+#agrupando e criando os filtros das casas construidas.
+f_h2 = df[['yr_built','price_m2_lot']].groupby('yr_built').median().reset_index()
+
+# filtrando os imóveis antes do ano de 1955
+menor = f_h2.loc[f_h2['yr_built'] < '1955']
+
+#filtrando os imóveis construindo desde de 1955
+maior = f_h2.loc[f_h2['yr_built'] >= '1955']
+
+#descobriando a mediana de preços dos imóveis mais antigo
+antigo = menor.median(numeric_only=True).iloc[0]
+
+#descobrindo a mediana de preços dos imóveis mais novos
+novo   = maior.median(numeric_only=True).iloc[0]
+
+fig = px.bar(f_h2,x='yr_built', y='price_m2_lot')
+st.plotly_chart(fig)
+
+fig1 = px.bar(maior, x='yr_built', y='price_m2_lot')
+st.plotly_chart(fig1)
+
+
