@@ -88,10 +88,121 @@ antigo = menor.median(numeric_only=True).iloc[0]
 #descobrindo a mediana de preços dos imóveis mais novos
 novo   = maior.median(numeric_only=True).iloc[0]
 
+## making the plot 
+
+c1, c2, c3 = st.columns(3)
+
+c1.header('Prices M2 Houses by Year of Built')
+
 fig = px.bar(f_h2,x='yr_built', y='price_m2_lot')
-st.plotly_chart(fig)
+c1.plotly_chart(fig, user_container_witdh= True)
+
+fig_teste = px.scatter(f_h2, x='yr_built',y= 'price_m2_lot')
+c1.plotly_chart(fig_teste,user_container_witdh= True)
+
+c2.header('Prices M2 of Smalll of Houses Built')
 
 fig1 = px.bar(maior, x='yr_built', y='price_m2_lot')
-st.plotly_chart(fig1)
+c2.plotly_chart(fig1,user_container_witdh= True)
+
+fig_teste = px.scatter(menor, x='yr_built',y= 'price_m2_lot')
+c2.plotly_chart(fig_teste,user_container_witdh= True)
+
+c3.header('Prices M2 of Beyourd of Houses Built')
+fig2 = px.bar(menor, x='yr_built', y='price_m2_lot')
+c3.plotly_chart(fig2, user_container_witdh= True)
+fig_teste = px.scatter(maior, x='yr_built',y= 'price_m2_lot')
+c3.plotly_chart(fig_teste, user_container_witdh= True)
+
+
+##### TABLE OF ACQUISTION ######
+df1 = df.copy()
+#criando coluna das estações
+df1['seasons'] = df['month'].apply(lambda x: 'spring'  if (x>=3 and x<=5) else 'summer' if (x>=6 and x<=8) else 
+                                  'fall' if (x>=9 and x<=11) else 'winter')
+
+#criando coluna de referencia numerica das estações
+df1['numeric_seasons'] = df1['seasons'].apply(lambda x: 1 if x == 'summer' else 2 if x== 'spring' 
+                                              else 3 if x== 'fall' else 4)
+
+#fazendo a mediana de preços dos endereços(zipcode) por preço por M2 construídos
+price_region = df1[['zipcode','price_m2_lot']].groupby('zipcode').median().reset_index()
+
+#renomenado as colunas para futura mescla
+price_region.columns= ['zipcode','price_region']
+
+#fazenddo as medianas de zipcode e numeric_seasons 
+seasons_median = df1[['numeric_seasons','zipcode','price_m2_lot']].groupby(['zipcode','numeric_seasons']).median().reset_index()
+
+seasons_median.columns = ['zipcode','numeric_seasons','price_seasons']
+
+#unificando os preços medianos das regioões com o DF original
+df1 = pd.merge(df1,price_region, on='zipcode',how='inner')
+
+#unificando a mediana de preços por estações do ano
+df1 = pd.merge(df1,seasons_median, on= ['zipcode','numeric_seasons'], how='inner')
+
+#TABLE ACQUISITION OF HOUSES
+
+#loading date
+location = df1.head(50).copy(deep=True)
+
+#select columns necessary
+location = location[['id','zipcode','price','price_region','price_seasons','condition',
+                     'waterfront','lat','long']].copy(deep=True)
+
+#library of maps
+from geopy.geocoders import Nominatim
+
+#initialize Nominatim APi
+
+geolocator = Nominatim(user_agent ='geoapiExercises') #porteiro
+
+#guardando a latitude e longitude para acessar o endereço no mapa
+#response=geolocator.reverse ('47.4977,-122.226')
+
+for i in range(len(location)):
+    
+    #descobrindo a localização dos imóveis
+    query = str(location.loc[i,'lat']) + ',' + str(location.loc[i,'long'])
+    
+    response = geolocator.reverse(query,timeout=1000)
+    
+    if 'city' in response.raw['address']:
+        location.loc[i,'city'] = response.raw['address']['city']
+    
+        if 'state' in response.raw['address']:
+            location.loc[i,'state']= response.raw['address']['state']
+    
+            if 'neighbourhood'in response.raw['address']:
+                location.loc[i,'neighbourhood']= response.raw['address']['neighbourhood']
+    
+        #linha de condição de compra de acordo com os perfis dos imóveis 
+    location['acquisition'] = location.apply(lambda x: 'buy' if (x['price_seasons']< x['price_region']) 
+                                                 & (x['waterfront']==1) & (x['condition']>=3) else 'no_buy', axis=1)
+       
+    tabela = location[['id','zipcode','price','price_region','condition','waterfront','state',
+                       'city','neighbourhood','acquisition']].copy(deep=True)
+
+st.title( 'TABLE OF ACQUISITION OF HOUSES')
+st.dataframe(tabela)
+
+######## TABLE SELL OF HOUSES 
+
+st.title( 'TABLE SELL OF HOUSES')
+
+#linha que calculo o preço de venda dos imóveis:
+tabela['sell']= tabela.apply(lambda x: (x['price']* 0.30 + x['price']) if x['acquisition']=='buy' 
+                                 else (x['price'] *0.10 + x['price']),axis=1)
+
+#linha que calculo a lucratividade dos imóveis
+tabela['lucro'] = tabela.apply(lambda x: x['sell'] - x['price'],axis=1)
+
+#criando coluna com as respectivas porcentagens de lucro das vendas dos imóveis
+tabela['porcentagem_lucro'] = diferenca(vf=tabela['sell'],vi=tabela['price'])
+
+table_sell = tabela.copy(deep=True)
+
+st.dataframe(table_sell)
 
 
