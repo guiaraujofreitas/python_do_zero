@@ -205,4 +205,12 @@ table_sell = tabela.copy(deep=True)
 
 st.dataframe(table_sell)
 
+#========= MAP ================
+houses = df1[['id','price','lat','long']].copy()
+
+houses = px.density_mapbox(df, lat='lat', lon='long',z= 'price_m2_lot',radius=10,zoom=8,
+                            mapbox_style="stamen-terrain")
+
+houses.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+st.plotly_chart(houses)
 
