@@ -6,7 +6,7 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 
 from matplotlib import pyplot as plt
-
+from datetime import datetime
 
 st.set_page_config( layout= 'wide') 
 
@@ -22,8 +22,11 @@ df = pd.read_csv(path)
 
 df['date'] = pd.to_datetime(df['date'])
 
-#df['yr_built'].pd.to_datetime(df['yr_built']).dt.strftime('%Y-%m-%d')
-df['yr_built']= pd.to_datetime(df['yr_built'],format= '%Y')
+#df['yr_built']= pd.to_datetime(df['yr_built']).dt.strftime('%Y-%m-%d')
+
+#df['yr_built']= pd.to_datetime(df['yr_built'],format= '%Y')
+
+#df['yr_built']= pd.to_datetime( df['yr_built'] ).dt.strftime( '%Y )
 
 #criando coluna do mês
 df['month'] = df['date'].dt.month
@@ -72,6 +75,22 @@ figure= px.bar(f_h1, x= 'waterfront', y='price_m2_lot' )
 st.plotly_chart(figure)
 
 ############################################################################################
+
+#============= Filtros ===================== #
+
+min_year_built = int(df['yr_built'].min())
+max_year_built = int(df['yr_built'].max())
+
+
+st.sidebar.title ('Commercial Options') #título do filtro
+st.title (' Commercial Attributes')
+
+st.sidebar.subheader('Select Max Year Built') #texto em cima do filtro
+
+f_year_built = st.sidebar.slider('Year Built', min_year_built,
+                                            max_year_built,
+                                            min_year_built )
+
 
 #agrupando e criando os filtros das casas construidas.
 f_h2 = df[['yr_built','price_m2_lot']].groupby('yr_built').median().reset_index()
@@ -150,6 +169,7 @@ location = df1.head(50).copy(deep=True)
 #select columns necessary
 location = location[['id','zipcode','price','price_region','price_seasons','condition',
                      'waterfront','lat','long']].copy(deep=True)
+##============ MAPS ====================== #
 
 #library of maps
 from geopy.geocoders import Nominatim
@@ -212,5 +232,5 @@ houses = px.density_mapbox(df, lat='lat', lon='long',z= 'price_m2_lot',radius=10
                             mapbox_style="stamen-terrain")
 
 houses.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-st.plotly_chart(houses)
+st.plotly_chart(houses,user_container_witdh= True)
 
