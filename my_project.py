@@ -88,7 +88,7 @@ df1 = pd.merge(df1,seasons_median, on= ['zipcode','numeric_seasons'], how='inner
 #TABLE ACQUISITION OF HOUSES
 
 #loading date
-location = df1.head(320).copy(deep=True)
+location = df1.head(500).copy(deep=True)
 
 #select columns necessary
 location = location[['id','zipcode','price','price_region','price_seasons','condition',
@@ -134,6 +134,14 @@ st.dataframe(tabela)
 
 ### Filtro map #######
 
+#table acquisition of buy yes or not
+f_acquisition = st.sidebar.selectbox( 'Acquisition', tabela['acquisition'].unique() )
+
+#it has waterfront or not has waterfront
+f_waterfront = st.sidebar.selectbox('IS_WATERFRONT', tabela['waterfront'].unique() )
+
+
+f_neighbourhood = st.sidebar.selectbox('Neighbourhood',tabela['neighbourhood'].unique() )
 
 ##========= MAP ================
 houses = tabela[['id','price','lat','long']].copy(deep=True)
