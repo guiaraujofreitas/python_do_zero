@@ -44,56 +44,44 @@ df['price_m2_lot'] = np.round(df['price'] / df['m2_lot'],2)
 df['m2_living'] = np.round(df['sqft_living']* 0.092903,2) 
 
 df['m2_basement'] = np.round(df['sqft_basement'] * 0.092903,2)
+# ================================================================ #
 
-st.title(" Overview")
+df = df.copy()
 
-st.dataframe(df)
-
-#
-############################################################################################
-
-
-
-
-# ===================================================================== #
-
-
-##### TABLE OF ACQUISTION ######
-df1 = df.copy()
 #criando coluna das estações
-df1['seasons'] = df['month'].apply(lambda x: 'spring'  if (x>=3 and x<=5) else 'summer' if (x>=6 and x<=8) else 
+df['seasons'] = df['month'].apply(lambda x: 'spring'  if (x>=3 and x<=5) else 'summer' if (x>=6 and x<=8) else 
                                   'fall' if (x>=9 and x<=11) else 'winter')
 
 #criando coluna de referencia numerica das estações
-df1['numeric_seasons'] = df1['seasons'].apply(lambda x: 1 if x == 'summer' else 2 if x== 'spring' 
+df['numeric_seasons'] = df['seasons'].apply(lambda x: 1 if x == 'summer' else 2 if x== 'spring' 
                                               else 3 if x== 'fall' else 4)
 
 #fazendo a mediana de preços dos endereços(zipcode) por preço por M2 construídos
-price_region = df1[['zipcode','price_m2_lot']].groupby('zipcode').median().reset_index()
+price_region = df[['zipcode','price_m2_lot']].groupby('zipcode').median().reset_index()
 
 #renomenado as colunas para futura mescla
 price_region.columns= ['zipcode','price_region']
 
 #fazenddo as medianas de zipcode e numeric_seasons 
-seasons_median = df1[['numeric_seasons','zipcode','price_m2_lot']].groupby(['zipcode','numeric_seasons']).median().reset_index()
+seasons_median = df[['numeric_seasons','zipcode','price_m2_lot']].groupby(['zipcode','numeric_seasons']).median().reset_index()
 
 seasons_median.columns = ['zipcode','numeric_seasons','price_seasons']
 
 #unificando os preços medianos das regioões com o DF original
-df1 = pd.merge(df1,price_region, on='zipcode',how='inner')
+df = pd.merge(df,price_region, on='zipcode',how='inner')
 
 #unificando a mediana de preços por estações do ano
-df1 = pd.merge(df1,seasons_median, on= ['zipcode','numeric_seasons'], how='inner')
+df = pd.merge(df,seasons_median, on= ['zipcode','numeric_seasons'], how='inner')
 
-#TABLE ACQUISITION OF HOUSES
+#=============================================================================
 
+### TABLE ACQUISITON OF HOUSES 
 #loading date
-location = df1.head(500).copy(deep=True)
+location = df.head(350).copy(deep=True)
 
 #select columns necessary
 location = location[['id','zipcode','price','price_region','price_seasons','condition',
                      'waterfront','lat','long']].copy(deep=True)
-##============ MAPS ====================== #
 
 #library of maps
 from geopy.geocoders import Nominatim
@@ -128,32 +116,75 @@ for i in range(len(location)):
     tabela = location[['id','zipcode','price','price_region','condition','waterfront','state',
                        'city','neighbourhood','acquisition','lat','long']].copy(deep=True)
 
-st.title( 'TABLE OF ACQUISITION OF HOUSES')
+### TABLE DE OF SELL ######
+
+
+#linha que calculo o preço de venda dos imóveis:
+tabela['sell']= tabela.apply(lambda x: (x['price']* 0.30 + x['price']) if x['acquisition']=='buy' 
+                                 else (x['price'] *0.10 + x['price']),axis=1)
+
+#linha que calculo a lucratividade dos imóveis
+tabela['lucro'] = tabela.apply(lambda x: x['sell'] - x['price'],axis=1)
+
+#criando coluna com as respectivas porcentagens de lucro das vendas dos imóveis
+tabela['porcentagem_lucro'] = diferenca(vf=tabela['sell'],vi=tabela['price'])
+
 st.dataframe(tabela)
+#########################################
 
 
-### Filtro map #######
+#f_attributes = st.sidebar.multiselect('Select the columns', df.columns)
 
-#table acquisition of buy yes or not
-f_acquisition = st.sidebar.selectbox( 'Acquisition', tabela['acquisition'].unique() )
+f_zipcode = st.sidebar.multiselect('Select the ZIPCODE of Houses',tabela['zipcode'].unique())
 
-#it has waterfront or not has waterfront
-f_waterfront = st.sidebar.selectbox('IS_WATERFRONT', tabela['waterfront'].unique() )
+f_condition = st.sidebar.selectbox('Select kind condition of Houses',tabela['condition'].unique())
+
+f_waterfront = st.sidebar.selectbox('Is Waterfront',tabela['waterfront'].unique())
+
+f_attributes = tabela.columns
+is_check = st.checkbox('Display table')
+
+#
+
+price_min = int(tabela['price'].min())
+price_mean = int(tabela['price'].mean())
+price_max = int(tabela['price'].max()) 
+
+price_slider = st.slider('Price of Houses Average', price_min,price_max, price_mean)
+
+if is_check:
+    
+    houses = tabela[tabela['price']< price_slider],f_attributes 
+    houses = tabela[tabela['waterfront'] != f_waterfront]
+    houses = tabela[tabela['condition']<= f_condition]
+    
+    if  f_zipcode :
+        houses = tabela[tabela['zipcode'].isin(f_zipcode)]
+        
+            
+
+   
+    #========= MAP ================
+
+    fig = px.scatter_mapbox( houses, 
+                        lat = 'lat',
+                        lon = 'long', 
+                        size ='price',
+                        color_continuous_scale=px.colors.cyclical.IceFire,
+                        size_max = 15,
+                        zoom =10 )
+    #atribuindo o modelo de mapa 
+    fig.update_layout(mapbox_style = 'open-street-map')
+    #colocando as margens do mapa 
+    fig.update_layout(height=600, margin= {'r':0, 't':0, 'l':0, 'b': 0} )
+
+    #fig.show()
+    st.plotly_chart(fig,user_container_witdh= True)
+    
+        
 
 
-f_neighbourhood = st.sidebar.selectbox('Neighbourhood',tabela['neighbourhood'].unique() )
-
-##========= MAP ================
-houses = tabela[['id','price','lat','long']].copy(deep=True)
-
-houses = px.density_mapbox(tabela, lat='lat', lon='long',z= 'price',radius=10,zoom=8,
-                            mapbox_style="stamen-terrain")
-
-houses.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-st.plotly_chart(houses,user_container_witdh= True)
-
-
-######## TABLE SELL OF HOUSES #################
+    st.dataframe(houses)
 
 
 
