@@ -77,7 +77,7 @@ df = pd.merge(df,seasons_median, on= ['zipcode','numeric_seasons'], how='inner')
 
 ### TABLE ACQUISITON OF HOUSES 
 #loading date
-location = df.head(350).copy(deep=True)
+location = df.head(50).copy(deep=True)
 
 #select columns necessary
 location = location[['id','zipcode','price','price_region','price_seasons','condition',
@@ -137,12 +137,13 @@ st.dataframe(tabela)
 
 f_zipcode = st.sidebar.multiselect('Select the ZIPCODE of Houses',tabela['zipcode'].unique())
 
-f_condition = st.sidebar.selectbox('Select kind condition of Houses',tabela['condition'].unique())
+f_condition = st.sidebar.multiselect('Select kind condition of Houses',tabela['condition'].unique())
 
-f_waterfront = st.sidebar.selectbox('Is Waterfront',tabela['waterfront'].unique())
+
+f_waterfront = st.sidebar.selectbox('Is Waterfront', tabela['waterfront'].unique())
 
 f_attributes = tabela.columns
-is_check = st.checkbox('Display table')
+is_check = st.checkbox('Display Table and Map')
 
 #
 
@@ -155,8 +156,12 @@ price_slider = st.slider('Price of Houses Average', price_min,price_max, price_m
 if is_check:
     
     houses = tabela[tabela['price']< price_slider],f_attributes 
-    houses = tabela[tabela['waterfront'] != f_waterfront]
-    houses = tabela[tabela['condition']<= f_condition]
+    
+
+    houses = tabela[tabela['waterfront']==f_waterfront]
+    
+    if f_condition:
+        houses = tabela[tabela['condition'].isin(f_condition)]
     
     if  f_zipcode :
         houses = tabela[tabela['zipcode'].isin(f_zipcode)]
@@ -182,7 +187,7 @@ if is_check:
     st.plotly_chart(fig,user_container_witdh= True)
     
         
-
+    
 
     st.dataframe(houses)
 
