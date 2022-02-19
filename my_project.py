@@ -77,11 +77,11 @@ df = pd.merge(df,seasons_median, on= ['zipcode','numeric_seasons'], how='inner')
 
 ### TABLE ACQUISITON OF HOUSES 
 #loading date
-location = df.head(50).copy(deep=True)
+location = df.head(100).copy(deep=True)
 
 #select columns necessary
 location = location[['id','zipcode','price','price_region','price_seasons','condition',
-                     'waterfront','lat','long']].copy(deep=True)
+                     'waterfront','lat','long','bedrooms','bathrooms']].copy(deep=True)
 
 #library of maps
 from geopy.geocoders import Nominatim
@@ -114,7 +114,7 @@ for i in range(len(location)):
                                                  & (x['waterfront']==1) & (x['condition']>=3) else 'no_buy', axis=1)
        
     tabela = location[['id','zipcode','price','price_region','condition','waterfront','state',
-                       'city','neighbourhood','acquisition','lat','long']].copy(deep=True)
+                       'city','neighbourhood','acquisition','lat','long','bedrooms']].copy(deep=True)
 
 ### TABLE DE OF SELL ######
 
@@ -129,21 +129,23 @@ tabela['lucro'] = tabela.apply(lambda x: x['sell'] - x['price'],axis=1)
 #criando coluna com as respectivas porcentagens de lucro das vendas dos imóveis
 tabela['porcentagem_lucro'] = diferenca(vf=tabela['sell'],vi=tabela['price'])
 
-st.dataframe(tabela)
+
+#st.dataframe(tabela)
 #########################################
-
-
-#f_attributes = st.sidebar.multiselect('Select the columns', df.columns)
-
 f_zipcode = st.sidebar.multiselect('Select the ZIPCODE of Houses',tabela['zipcode'].unique())
 
-f_condition = st.sidebar.multiselect('Select kind condition of Houses',tabela['condition'].unique())
+
 
 
 f_waterfront = st.sidebar.selectbox('Is Waterfront', tabela['waterfront'].unique())
 
-f_attributes = tabela.columns
-is_check = st.checkbox('Display Table and Map')
+
+###################################
+
+
+#f_attributes = st.sidebar.multiselect('Select the columns', df.columns)
+
+
 
 #
 
@@ -153,31 +155,32 @@ price_max = int(tabela['price'].max())
 
 price_slider = st.slider('Price of Houses Average', price_min,price_max, price_mean)
 
+
+
+is_check = st.checkbox('Display Table and Map')
+               
 if is_check:
     
-    houses = tabela[tabela['price']< price_slider],f_attributes 
+    tabela = tabela[tabela['price']< price_slider]
+
+  
+
+if f_zipcode:
+    tabela = tabela.loc[tabela['zipcode'].isin(f_zipcode)]   
+    
+    if f_waterfront:
+        tabela = tabela.loc[tabela['waterfront']==1]
+     
     
 
-    houses = tabela[tabela['waterfront']==f_waterfront]
-    
-    if f_condition:
-        houses = tabela[tabela['condition'].isin(f_condition)]
-    
-    if  f_zipcode :
-        houses = tabela[tabela['zipcode'].isin(f_zipcode)]
-        
-            
-
-   
-    #========= MAP ================
-
-    fig = px.scatter_mapbox( houses, 
-                        lat = 'lat',
-                        lon = 'long', 
-                        size ='price',
-                        color_continuous_scale=px.colors.cyclical.IceFire,
-                        size_max = 15,
-                        zoom =10 )
+       #========= MAP ================
+    fig = px.scatter_mapbox(tabela, 
+                            lat = 'lat',
+                            lon = 'long', 
+                            size ='price',
+                            color_continuous_scale=px.colors.cyclical.IceFire,
+                            size_max = 15,
+                            zoom =10 )
     #atribuindo o modelo de mapa 
     fig.update_layout(mapbox_style = 'open-street-map')
     #colocando as margens do mapa 
@@ -185,11 +188,18 @@ if is_check:
 
     #fig.show()
     st.plotly_chart(fig,user_container_witdh= True)
-    
+  
+       
         
     
 
-    st.dataframe(houses)
+    st.dataframe(tabela)
 
+    
+
+#if is_check:
+    #tabela = tabela[tabela['bedrooms']< f_bedrooms]
+#if f_waterfront:
+        #houses = tabela[tabela['waterfront'].isin(f_waterfront)]
 
 
