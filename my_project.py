@@ -22,7 +22,8 @@ df = pd.read_csv(path)
 
 df['date'] = pd.to_datetime(df['date'])
 
-#df['yr_built']= pd.to_datetime(df['yr_built']).dt.strftime('%Y-%m-%d')
+df['yr_built']= pd.to_datetime(df['yr_built']).dt.strftime('%Y-%m-%d')
+
 
 #df['yr_built']= pd.to_datetime(df['yr_built'],format= '%Y')
 
@@ -77,7 +78,7 @@ df = pd.merge(df,seasons_median, on= ['zipcode','numeric_seasons'], how='inner')
 
 ### TABLE ACQUISITON OF HOUSES 
 #loading date
-location = df.head(100).copy(deep=True)
+location = df.head(30).copy(deep=True)
 
 #select columns necessary
 location = location[['id','zipcode','price','price_region','price_seasons','condition',
@@ -165,14 +166,19 @@ if is_check:
 
   
 
-if f_zipcode:
-    tabela = tabela.loc[tabela['zipcode'].isin(f_zipcode)]   
+    if f_zipcode:
+        tabela = tabela.loc[tabela['zipcode'].isin(f_zipcode)]
+        
+        if f_waterfront:
+            tabela = tabela.loc[tabela['waterfront']==1]
     
-    if f_waterfront:
-        tabela = tabela.loc[tabela['waterfront']==1]
-     
-    
+    num_houses = len(tabela)  
+         
+    st.write('The Humber of Houses select are:', num_houses)
 
+    st.dataframe(tabela)
+    
+    st.subheader('MAP OF HOUSES SELECT')
        #========= MAP ================
     fig = px.scatter_mapbox(tabela, 
                             lat = 'lat',
@@ -189,17 +195,114 @@ if f_zipcode:
     #fig.show()
     st.plotly_chart(fig,user_container_witdh= True)
   
-       
-        
-    
+# ======================== Plot ==================== #
 
-    st.dataframe(tabela)
+# Hipotese 1:
 
-    
+f_h1 = df[['waterfront','price_m2_lot']].groupby('waterfront').median().reset_index()
 
-#if is_check:
-    #tabela = tabela[tabela['bedrooms']< f_bedrooms]
-#if f_waterfront:
-        #houses = tabela[tabela['waterfront'].isin(f_waterfront)]
+#filtrando as casas c/ vista p/ o mar
+a = f_h1.loc[f_h1['waterfront']== 0]
+
+#filtrando as casas s/ vista para o mar
+b = f_h1.loc[f_h1['waterfront']!= 0]
+
+#calculando a diferença em % / pegando o primeiro valor de cada característica do imóvel
+
+porcentagem = diferenca(vf=b['price_m2_lot'].iloc[0], vi=a['price_m2_lot'].iloc[0])
 
 
+
+#plotando o gráfico
+
+#fig = plt.figure(figsize=(13,8))
+fig = px.bar(f_h1, x= 'waterfront', y= 'price_m2_lot')
+
+st.title('H1: Imóveis que possuem vista para água, são 30% mais caros, na média.')
+st.write('Falsa: Imóveis com vista para água em média 45,93% mais caros em relação aos que não contém vista para o mar.')
+#plot  
+st.plotly_chart(fig)     
+
+## H2 ############
+
+st.title('H2: Imóveis com data de construção menor que 1955, são 50% mais baratos, na média')
+st.write('Casas construidas antes de 1955 não são 50% mais baratas. Elas são em média 133.3 % mais caras em comparação aos imóveis construídos após esse período')
+
+#agrupando e criando os filtros das casas construidas.
+f_h2 = df[['yr_built','price_m2_lot']].groupby('yr_built').median().reset_index()
+
+# filtrando os imóveis antes do ano de 1955
+menor = f_h2.loc[f_h2['yr_built'] < '1955']
+
+#filtrando os imóveis construindo desde de 1955
+maior = f_h2.loc[f_h2['yr_built'] >= '1955']
+
+#descobriando a mediana de preços dos imóveis mais antigo
+antigo = menor.median(numeric_only=True).iloc[0]
+
+#descobrindo a mediana de preços dos imóveis mais novos
+novo   = maior.median(numeric_only=True).iloc[0]
+
+#plots
+
+fig1 = px.scatter(f_h2, x='yr_built', y= 'price_m2_lot') 
+st.plotly_chart(fig1)
+
+############### H3 ###############
+st.title('H3: Imóveis sem porão possuem sqrt_lot, são 50%¶ maiores do que com porão.')
+st.subheader('Falso: Os imóveis sem porão são 3,62% maiores do que as casas com porão')
+c1,c2,c3 = st.columns(3)
+
+f_h3 = df[['m2_lot','m2_basement']].groupby('m2_lot').median().reset_index()
+
+#filtrando as casas sem porão
+without_basement = f_h3.loc[f_h3['m2_basement']== 0]
+
+#filtrando as casas com porão
+with_basement = f_h3.loc[f_h3['m2_basement']!= 0]
+
+#============================================================#
+
+c1.subheader('ALL HOUSES')
+#plot1
+fig = px.scatter(f_h3, x= 'm2_lot', y= 'm2_basement')
+c1.plotly_chart(fig)
+
+c2.subheader('HOUSES WITH BASEMENT')
+#plot2
+fig2 = px.scatter(with_basement, x='m2_lot', y='m2_basement')
+c2.plotly_chart(fig2)
+
+c3.subheader('HOUSES WITHOUT BASEMENT')
+#plot3
+fig3 = px.scatter(without_basement, x='m2_lot', y='m2_basement')
+c3.plotly_chart(fig3)
+
+############## H4 ##########################
+st.title('H4: O crescimento do preço dos imóveis YoY ( Year over Year ) é de 10%')
+st.subheader('Falso: O Crescimenmto anual dos imóveis são de -51.19 %')
+
+c1, c2 = st.columns(2)
+
+#separando, agrupando e somando os valores dos respectivos anos do DF
+by_year = df[['price_m2_lot','year']].groupby('year').sum().reset_index()
+
+
+# fazendo o calculo % utilizndo função do pandas pct._charge() para calcular a diferença do ano para outro
+by_year['pct'] = by_year['price_m2_lot'].pct_change()
+
+#criando coluna para indentificar quais são os anos negativos e positivo
+by_year['color'] = by_year['pct'].apply(lambda x: 'negativo' if x<0 else 'positivo')
+
+crescimento = by_year['pct'].loc[1] * 100
+
+# ===== montagem do gráfico ======= #
+
+# selecionado as cores do gráfico
+#color = ['Positivo','price_m2_lot'] 
+
+fig = px.bar(by_year, x= 'year', y= 'price_m2_lot', color= 'color', title = 'Price m2 by Year')
+c1.plotly_chart(fig)
+
+fig2 = px.bar( by_year, x= 'year', y= 'pct', color = 'color', title = 'Grothwing of Houses by Year')
+c2.plotly_chart(fig2)
