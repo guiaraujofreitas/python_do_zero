@@ -306,3 +306,81 @@ c1.plotly_chart(fig)
 
 fig2 = px.bar( by_year, x= 'year', y= 'pct', color = 'color', title = 'Grothwing of Houses by Year')
 c2.plotly_chart(fig2)
+
+
+## ======== H5 ============= ##
+
+st.title('H5: Imóveis com 3 banheiros tem um crescimento MoM ( Month over Month ) de 15%')
+
+st.subheader('Hipotese 5 é falso. Pois como desmonstrado no gráfico 2 é possível notar que não há um crescimento mês a mês de 15% imóveis com 3 banheiros.')
+
+
+c1, c2 = st.columns(2)
+
+df_aux = df.loc[df['bathrooms']==3]
+
+#separando e agrupando os imóveis por preço, mês e com as quantidades de banheiros
+df_aux1 =df_aux[['price_m2_lot','month','bathrooms']].groupby('month').median().reset_index()
+
+
+# fazendo o calculo % utilizndo função do pandas pct._charge() para calcular a diferença do ano para outro
+df_aux1['pct'] = df_aux1['price_m2_lot'].pct_change()
+
+#df_aux1['pct'].loc
+
+df_aux1['color'] = df_aux1['pct'].apply(lambda x: 'negativo' if x<0 else 'positivo')
+
+# ===== montagem do gráfico ======= #
+
+fig = px.bar(df_aux1, x= 'month', y = 'price_m2_lot', color = 'color', title = 'Grothwing by Month')
+c1.plotly_chart(fig)
+
+fig2 = px.bar(df_aux1, x= 'month', y = 'pct', color = 'color', title = 'Grothing Median of Houses in %')
+c2.plotly_chart(fig2)
+
+
+### H6 ######
+st.title('H6: Casas reformadas antes do ano 2000 são 21% mais barata')
+st.subheader('Falsa: Imóveis reformados antes dos anos 2000 são 37.47 % mais baratos')
+# filtrando a agrupando os imóveis por imóveis renovado e seus respectivos preços
+df_filtro = df[['yr_renovated','price_m2_lot']].groupby('yr_renovated').median().reset_index()
+
+# criando uma nova coluna de antes e depois do ano 2000
+df_filtro['antes_depois'] = df_filtro['yr_renovated'].apply(lambda x: 'antes_2000' if x<= 2000 else 'depois_2000')
+
+# agrupando os dados por período e preço po M2
+aux_reforma= df_filtro[['antes_depois','price_m2_lot']].groupby('antes_depois').median().reset_index()
+
+## ===== making plot ====== #
+
+fig = px.bar(aux_reforma, x= 'antes_depois', y = 'price_m2_lot')
+st.plotly_chart(fig)
+
+
+### H7 #########
+
+st.title('H7: Casas localizadas com zipcode 98003, são os imóveis mais baratos')
+
+st.subheader('Hipotese é falsa. Casas com zipcode 98003 não são as mais baratas')
+
+#ordernando,separando e agrupaando os preços dos imóveis.
+df_h7 =df[['zipcode','price_m2_lot']].groupby('zipcode').median().reset_index()
+
+# criando váraivel para descobrindo o imóvel com menor preço
+less_price = df_h7['price_m2_lot'].min()
+
+#fazendo o filtro para descobrir qual é zipcode corresponde ao menor preço filtrado
+less_zipcode = df_h7[df_h7['price_m2_lot']==less_price]
+
+fig = px.bar(df_h7, x= 'zipcode', y = 'price_m2_lot')
+st.plotly_chart(fig)
+
+## =======  H8 ######
+
+st.title('H8: Casas que tem uma nota maior, são as que contém mais quartos')
+st.subheader('')
+
+df_h8 = df[['grade','bedrooms']].groupby('grade').median().reset_index()
+
+fig = px.bar(df_h8, x= 'bedrooms', y = 'grade')
+st.plotly_chart(fig)
