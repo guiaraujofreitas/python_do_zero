@@ -382,5 +382,35 @@ st.subheader('')
 
 df_h8 = df[['grade','bedrooms']].groupby('grade').median().reset_index()
 
-fig = px.bar(df_h8, x= 'bedrooms', y = 'grade')
+fig = px.bar(df_h8, x= 'grade', y = 'bedrooms')
+st.plotly_chart(fig)
+
+## ============= H9 ================ ###
+
+st.title('H9: Casas que tem uma sala maior são mais caras')
+
+df_h9 = df[['price_m2_lot','m2_living']].groupby('m2_living').median().reset_index()
+
+fig = px.bar(df_h9, x= 'm2_living', y= 'price_m2_lot')
+st.plotly_chart(fig)
+
+fig1= px.imshow(df_h9)
+st.plotly_chart(fig1)
+
+##==================  H10 =============================#
+
+st.title('H10: As casas são mais caras no verão') 
+st.subheader('É falso. Casas são mais caras na primavera do que no verão')
+
+df['seasons'] = df['month'].apply(lambda x: 'spring'  if (x>=3) & (x<=5) else 'summer' if (x>=6) & (x<=8) else 
+                                  'fall' if (x>=9) & (x<=11) else 'winter')
+
+#separando e agrupando os imóveis por preço e estação do ano
+houses_seasons = df[['seasons','price_m2_lot']].groupby('seasons').median().reset_index()
+
+#montando o gráfico 
+
+
+#plotando o gráfico para ilustrar a comparação
+fig = px.bar(houses_seasons,x='seasons', y= 'price_m2_lot')
 st.plotly_chart(fig)
