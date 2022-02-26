@@ -5,6 +5,7 @@ import seaborn as sns
 import plotly.express as px
 import matplotlib.pyplot as plt
 
+
 from matplotlib import pyplot as plt
 from datetime import datetime
 
@@ -22,12 +23,9 @@ df = pd.read_csv(path)
 
 df['date'] = pd.to_datetime(df['date'])
 
-df['yr_built']= pd.to_datetime(df['yr_built']).dt.strftime('%Y-%m-%d')
-
-
-#df['yr_built']= pd.to_datetime(df['yr_built'],format= '%Y')
-
-#df['yr_built']= pd.to_datetime( df['yr_built'] ).dt.strftime( '%Y )
+## Convent to Year, Month and day
+df['yr_built'] = df['yr_built'].apply( lambda x: pd.to_datetime( x, format='%Y') if x > 0
+                                            else pd.to_datetime('1970-01-01', format='%Y-%m-%d'))
 
 #criando coluna do mês
 df['month'] = df['date'].dt.month
@@ -40,6 +38,7 @@ df['m2_lot'] = df['sqft_lot'].apply(lambda x: np.round(x * 0.092903,2) )
 
 #criando coluna de preços por M2
 df['price_m2_lot'] = np.round(df['price'] / df['m2_lot'],2)
+
 
 # transformando pé quadrados das salas em M2
 df['m2_living'] = np.round(df['sqft_living']* 0.092903,2) 
@@ -228,6 +227,8 @@ st.plotly_chart(fig)
 st.title('H2: Imóveis com data de construção menor que 1955, são 50% mais baratos, na média')
 st.write('Casas construidas antes de 1955 não são 50% mais baratas. Elas são em média 133.3 % mais caras em comparação aos imóveis construídos após esse período')
 
+c1,c2,c3 = st.columns(3)
+
 #agrupando e criando os filtros das casas construidas.
 f_h2 = df[['yr_built','price_m2_lot']].groupby('yr_built').median().reset_index()
 
@@ -246,9 +247,17 @@ novo   = maior.median(numeric_only=True).iloc[0]
 #plots
 
 fig1 = px.scatter(f_h2, x='yr_built', y= 'price_m2_lot') 
-st.plotly_chart(fig1)
+c1.plotly_chart(fig1, use_container_width= True )
+
+fig2 = px.scatter(menor, x='yr_built', y = 'price_m2_lot')
+c2.plotly_chart(fig2, use_container_width= True )
+
+fig3 = px.scatter(maior, x = 'yr_built', y = 'price_m2_lot')
+c3.plotly_chart(fig3, use_container_width= True )
 
 ############### H3 ###############
+
+
 st.title('H3: Imóveis sem porão possuem sqrt_lot, são 50%¶ maiores do que com porão.')
 st.subheader('Falso: Os imóveis sem porão são 3,62% maiores do que as casas com porão')
 c1,c2,c3 = st.columns(3)
@@ -388,14 +397,13 @@ st.plotly_chart(fig)
 ## ============= H9 ================ ###
 
 st.title('H9: Casas que tem uma sala maior são mais caras')
+st.subheader('Verdade: Casas com sala maior contém um maior preço por M2')
 
 df_h9 = df[['price_m2_lot','m2_living']].groupby('m2_living').median().reset_index()
 
-fig = px.bar(df_h9, x= 'm2_living', y= 'price_m2_lot')
-st.plotly_chart(fig)
 
-fig1= px.imshow(df_h9)
-st.plotly_chart(fig1)
+fig= px.scatter(df_h9, x= 'm2_living', y= 'price_m2_lot')
+st.plotly_chart(fig)
 
 ##==================  H10 =============================#
 
