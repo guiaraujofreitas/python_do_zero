@@ -98,12 +98,13 @@ def data_groupby(df):
 
     #unificando a mediana de preços por estações do ano
     df = pd.merge(df,seasons_median, on= ['zipcode','numeric_seasons'], how='inner')
+    #st.dataframe(df)
 
-    return df
+    #return df
 
 #=============================================================================
 
-def table(df,tabela):
+#def table(df):
 
     ### TABLE ACQUISITON OF HOUSES #####
     #loading date
@@ -153,12 +154,16 @@ def table(df,tabela):
 
     #criando coluna com as respectivas porcentagens de lucro das vendas dos imóveis
     tabela['porcentagem_lucro'] = diferenca(vf=tabela['sell'],vi=tabela['price'])
-
+    
+    #tabela = tabela.copy(deep=True)
+    
+    #return None
 
 #########################################
 
-def filter_houses(tabela):
+#def filter_houses(tabela):
     # ===== Filters of Houses ======== #
+    
 
     #filter of Zipcode
     f_zipcode = st.sidebar.multiselect('Select the ZIPCODE of Houses',tabela['zipcode'].unique())
@@ -434,3 +439,13 @@ if __name__ == "__main__":
 
     convent_date(df)
     convent_built(df)
+    add_month(df)
+    add_year(df)
+    add_m2(df)
+    add_price_m2(df)
+    convent_living(df)
+    convent_basement(df)
+    data_groupby(df)
+    hipotese(df)
+    #filter_houses()
+    #table(df)
